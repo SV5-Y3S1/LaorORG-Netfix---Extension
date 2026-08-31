@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaorORG © Netfix Extensions</title>
+    <title>LaorORG © Netfix - Auto Install</title>
     <style>
         * {
             margin: 0;
@@ -91,27 +91,14 @@
         .btn-primary {
             background: #667eea;
             color: white;
+            text-decoration: none;
+            font-weight: 600;
         }
 
-        .btn-primary:hover:not(:disabled) {
+        .btn-primary:hover {
             background: #5568d3;
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-primary:disabled {
-            background: #999;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .btn-secondary {
-            background: #e8e8e8;
-            color: #333;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: #d8d8d8;
         }
 
         .status {
@@ -206,6 +193,24 @@
             line-height: 1.5;
         }
 
+        .steps {
+            text-align: left;
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .steps ol {
+            margin-left: 20px;
+        }
+
+        .steps li {
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
         code {
             background: #f5f5f5;
             padding: 2px 6px;
@@ -215,11 +220,6 @@
 
         a {
             color: #667eea;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
@@ -228,12 +228,12 @@
         <div class="header">
             <div class="logo" style="background-image: url('./icons/icon128.png');"></div>
             <h1>LaorORG © Netfix</h1>
-            <p class="subtitle">One-Click Auto Installer</p>
+            <p class="subtitle">Auto Install Extension</p>
         </div>
 
         <div class="description">
-            <strong>Choose installation method:</strong><br>
-            Automatic (loads directly) or Manual (Python script).
+            <strong>Install with one click.</strong><br>
+            The simplest way to get Netflix cookies injected!
         </div>
 
         <div class="warning">
@@ -250,96 +250,33 @@
         </div>
 
         <div class="buttons">
-            <button class="btn btn-primary" onclick="downloadPythonInstaller(event)" id="pythonBtn">
-                <span>📥</span>
-                <span>Download Auto-Installer</span>
-            </button>
-            <button class="btn btn-secondary" onclick="manualLoad(event)" id="manualBtn">
-                <span>⚙️</span>
-                <span>Manual Load Instructions</span>
-            </button>
+            <a href="#" class="btn btn-primary" id="installLink" onclick="handleInstall(event)">
+                <span>⚡</span>
+                <span>Start Installation</span>
+            </a>
         </div>
 
         <div id="status" class="status"></div>
 
+        <div id="steps" class="steps" style="display: none;">
+            <strong>📋 Quick Steps:</strong>
+            <ol>
+                <li>Click the button above to start</li>
+                <li>Browser will open extensions page</li>
+                <li>Click <strong>"Load unpacked"</strong></li>
+                <li>Select the extension folder when prompted</li>
+                <li>Done! Extension is installed</li>
+            </ol>
+        </div>
+
         <div class="footer">
-            <p><strong>Platform:</strong> Windows | macOS | Linux</p>
+            <p><strong>Platform:</strong> Chrome & Edge</p>
             <p>Version 1.0.0 • © 2026 LaorORG</p>
         </div>
     </div>
 
     <script>
         let selectedBrowser = 'chrome';
-
-        const PYTHON_SCRIPT = `#!/usr/bin/env python3
-import os, sys, json, shutil, zipfile, subprocess, platform
-from pathlib import Path
-from urllib.request import urlretrieve
-
-EXTENSION_ZIP_URL = "https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip"
-BROWSER = sys.argv[1].lower() if len(sys.argv) > 1 else "chrome"
-EXTRACT_DIR = Path.home() / ".local" / "share" / "LaorORG-Netfix-Extension"
-
-def get_browser_paths():
-    system = platform.system()
-    if system == "Windows":
-        exe = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" if BROWSER == "chrome" else r"C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"
-    elif system == "Darwin":
-        exe = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" if BROWSER == "chrome" else "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
-    else:
-        exe = "/usr/bin/google-chrome" if BROWSER == "chrome" else "/opt/microsoft/msedge/msedge"
-    return exe
-
-def main():
-    print("\\n╔═══════════════════════════════════════════════════════════════╗")
-    print("║         LaorORG © Netfix Extension Auto-Installer            ║")
-    print("╚═══════════════════════════════════════════════════════════════╝\\n")
-    
-    exe = get_browser_paths()
-    if not os.path.exists(exe):
-        print(f"✗ {BROWSER.capitalize()} not found")
-        sys.exit(1)
-    print("✓ Browser found")
-    
-    print("→ Downloading extension...")
-    try:
-        zip_path = Path.home() / "Downloads" / "LaorORG-Netfix-Extension.zip"
-        urlretrieve(EXTENSION_ZIP_URL, zip_path)
-        print("✓ Downloaded")
-    except Exception as e:
-        print(f"✗ Download failed: {e}")
-        sys.exit(1)
-    
-    print("→ Extracting...")
-    try:
-        os.makedirs(EXTRACT_DIR, exist_ok=True)
-        with zipfile.ZipFile(zip_path, 'r') as z:
-            z.extractall(EXTRACT_DIR)
-        print(f"✓ Extracted to {EXTRACT_DIR}")
-    except Exception as e:
-        print(f"✗ Failed: {e}")
-        sys.exit(1)
-    
-    if not (EXTRACT_DIR / "manifest.json").exists():
-        print("✗ manifest.json not found")
-        sys.exit(1)
-    print("✓ Extension verified")
-    
-    print(f"→ Launching {BROWSER.capitalize()}...")
-    try:
-        subprocess.Popen([exe, f"--load-extension={EXTRACT_DIR}", "https://www.netflix.com"])
-        print("✓ Browser launched with extension!")
-    except Exception as e:
-        print(f"⚠ Launch failed: {e}")
-    
-    print("\\n╔═══════════════════════════════════════════════════════════════╗")
-    print("║                    Installation Complete!                    ║")
-    print("╚═══════════════════════════════════════════════════════════════╝\\n")
-    print(f"Extension location: {EXTRACT_DIR}")
-    print("✓ Ready to use!\\n")
-
-if __name__ == "__main__":
-    main()`;
 
         function selectBrowser(browser) {
             selectedBrowser = browser;
@@ -353,51 +290,61 @@ if __name__ == "__main__":
             statusEl.className = `status ${type}`;
         }
 
-        function downloadPythonInstaller(event) {
+        async function handleInstall(event) {
             event.preventDefault();
-            const btn = document.getElementById('pythonBtn');
-            btn.disabled = true;
+
+            const btn = document.getElementById('installLink');
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.7';
 
             try {
-                const blob = new Blob([PYTHON_SCRIPT], { type: 'text/plain' });
+                // Show downloading status
+                showStatus('📥 Downloading extension... This is a one-time setup.', 'info');
+                document.getElementById('steps').style.display = 'block';
+
+                // Download the extension ZIP
+                const zipUrl = 'https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip';
+                const response = await fetch(zipUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Download failed. Please try again.');
+                }
+
+                const blob = await response.blob();
+
+                // Create a download link that triggers download
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'install-extension.py';
+                a.download = 'LaorORG-Netfix-Extension.zip';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
 
+                // Show next steps
                 showStatus(
-                    '<strong>✓ Auto-Installer downloaded!</strong><br><br>' +
-                    '<strong>Next:</strong><br>' +
-                    '<strong>Windows:</strong> Double-click <code>install-extension.py</code><br>' +
-                    '<strong>Mac/Linux:</strong> Run in Terminal: <code>python3 ~/Downloads/install-extension.py ' + selectedBrowser + '</code><br><br>' +
-                    '✓ Extension will install and open in your browser!',
+                    '<strong style="font-size: 16px;">✓ Extension downloaded!</strong><br><br>' +
+                    '📂 <strong>Next:</strong><br>' +
+                    '1. Extract the downloaded <code>LaorORG-Netfix-Extension.zip</code><br>' +
+                    '2. Open <code>' + (selectedBrowser === 'edge' ? 'edge://extensions/' : 'chrome://extensions/') + '</code><br>' +
+                    '3. Toggle <strong>Developer mode</strong> (top right)<br>' +
+                    '4. Click <strong>Load unpacked</strong><br>' +
+                    '5. Select the extracted extension folder<br><br>' +
+                    '✓ Extension installed! Netflix cookie injection ready!',
                     'success'
                 );
-                btn.textContent = '✓ Downloaded!';
-                setTimeout(() => { btn.disabled = false; }, 2000);
-            } catch (error) {
-                showStatus('✗ Error: ' + error.message, 'error');
-                btn.disabled = false;
-            }
-        }
 
-        function manualLoad(event) {
-            event.preventDefault();
-            showStatus(
-                '<strong>Manual Installation Steps:</strong><br><br>' +
-                '<strong>Step 1:</strong> Open extension manager<br>' +
-                '<code>' + (selectedBrowser === 'edge' ? 'edge://extensions/' : 'chrome://extensions/') + '</code><br><br>' +
-                '<strong>Step 2:</strong> Enable "Developer mode" (top-right toggle)<br><br>' +
-                '<strong>Step 3:</strong> Click "Load unpacked"<br><br>' +
-                '<strong>Step 4:</strong> Download ZIP from <a href="https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip" target="_blank">GitHub</a><br>' +
-                'Extract it, then select the folder<br><br>' +
-                '✓ Done! Extension is installed',
-                'info'
-            );
+                // Open extensions page
+                setTimeout(() => {
+                    window.open(selectedBrowser === 'edge' ? 'edge://extensions/' : 'chrome://extensions/', '_blank');
+                }, 500);
+
+            } catch (error) {
+                showStatus('❌ ' + error.message, 'error');
+                btn.style.pointerEvents = 'auto';
+                btn.style.opacity = '1';
+            }
         }
 
         window.addEventListener('load', () => {
