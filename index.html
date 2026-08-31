@@ -36,8 +36,12 @@
         }
 
         .logo {
-            font-size: 48px;
-            margin-bottom: 15px;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 15px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         h1 {
@@ -89,19 +93,16 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: #5568d3;
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
         }
 
-        .btn-secondary {
-            background: #e8e8e8;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #d8d8d8;
+        .btn-primary:disabled {
+            background: #999;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
 
         .status {
@@ -110,6 +111,7 @@
             border-radius: 8px;
             font-size: 14px;
             display: none;
+            line-height: 1.6;
         }
 
         .status.success {
@@ -155,10 +157,6 @@
             padding-top: 20px;
         }
 
-        .icon {
-            font-size: 20px;
-        }
-
         .browser-selector {
             display: flex;
             gap: 10px;
@@ -198,19 +196,35 @@
             text-align: left;
             line-height: 1.5;
         }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🎬</div>
+            <div class="logo" style="background-image: url('icons/icon128.png');"></div>
             <h1>LaorORG © Netfix</h1>
             <p class="subtitle">One-Click Extension Installer</p>
         </div>
 
         <div class="description">
-            <strong>What this does:</strong><br>
-            Automatically downloads and loads the Netflix cookie injector extension into your browser. Click, and you're done!
+            <strong>Automatic Installation:</strong><br>
+            Click below to download the installer. Run it once, and the extension loads automatically!
         </div>
 
         <div class="warning">
@@ -219,21 +233,17 @@
 
         <div class="browser-selector">
             <button class="browser-btn active" onclick="selectBrowser('chrome')">
-                <span class="icon">🔷</span> Chrome
+                <span>🔷</span> Chrome
             </button>
             <button class="browser-btn" onclick="selectBrowser('edge')">
-                <span class="icon">🔵</span> Edge
+                <span>🔵</span> Edge
             </button>
         </div>
 
         <div class="buttons">
-            <button class="btn btn-primary" onclick="installExtension()">
-                <span id="btn-icon">⬇️</span>
-                <span id="btn-text">Install Extension</span>
-            </button>
-            <button class="btn btn-secondary" onclick="downloadZip()">
-                <span>📦</span>
-                <span>Manual Install (Download Zip)</span>
+            <button class="btn btn-primary" onclick="downloadInstaller()" id="installBtn">
+                <span id="btn-icon">📥</span>
+                <span id="btn-text">Download & Install</span>
             </button>
         </div>
 
@@ -247,9 +257,7 @@
 
     <script>
         let selectedBrowser = 'chrome';
-        const GITHUB_ZIP_URL = 'https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip';
-        const GITHUB_INSTALLER_PS1 = 'https://raw.githubusercontent.com/SV5-Y3S1/LaorORG-Netfix---Extension/main/install-extension.ps1';
-        const GITHUB_INSTALLER_SH = 'https://raw.githubusercontent.com/SV5-Y3S1/LaorORG-Netfix---Extension/main/install-extension.sh';
+        const PYTHON_INSTALLER_URL = 'https://raw.githubusercontent.com/SV5-Y3S1/LaorORG-Netfix---Extension/main/install-extension.py';
 
         function selectBrowser(browser) {
             selectedBrowser = browser;
@@ -259,110 +267,70 @@
 
         function showStatus(message, type = 'info') {
             const statusEl = document.getElementById('status');
-            statusEl.textContent = message;
+            statusEl.innerHTML = message;
             statusEl.className = `status ${type}`;
         }
 
-        function installExtension() {
-            const isWindows = navigator.platform.includes('Win');
-            const isMac = navigator.platform.includes('Mac');
-            const isLinux = navigator.platform.includes('Linux') || navigator.platform.includes('X11');
-
-            const btn = event.target.closest('.btn');
+        async function downloadInstaller() {
+            const btn = document.getElementById('installBtn');
             const btnText = document.getElementById('btn-text');
             const btnIcon = document.getElementById('btn-icon');
+            
+            btn.disabled = true;
+            btnIcon.innerHTML = '<span class="spinner"></span>';
+            btnText.textContent = 'Downloading...';
 
-            if (isWindows) {
-                installWindows(btn, btnText, btnIcon);
-            } else if (isMac || isLinux) {
-                installUnix(btn, btnText, btnIcon);
-            } else {
-                showStatus('⚠️ Your OS is not supported. Please download and extract the zip manually.', 'error');
+            try {
+                const isWindows = navigator.platform.includes('Win');
+                const isMac = navigator.platform.includes('Mac');
+                const isLinux = navigator.platform.includes('Linux') || navigator.platform.includes('X11');
+
+                // Download Python installer
+                const response = await fetch(PYTHON_INSTALLER_URL);
+                if (!response.ok) throw new Error('Failed to download installer');
+                const script = await response.text();
+
+                const blob = new Blob([script], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'install-extension.py';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                if (isWindows) {
+                    showStatus(
+                        '<strong>✓ Installer downloaded!</strong><br><br>' +
+                        '<strong>Next:</strong><br>' +
+                        '1. Find <code>install-extension.py</code> in Downloads<br>' +
+                        '2. Double-click to run it<br>' +
+                        '3. A terminal will appear and install the extension<br>' +
+                        '4. ' + selectedBrowser.charAt(0).toUpperCase() + selectedBrowser.slice(1) + ' will open with the extension loaded!<br><br>' +
+                        '<strong>Or run manually in PowerShell:</strong><br>' +
+                        '<code>python ~/Downloads/install-extension.py ' + selectedBrowser + '</code>',
+                        'success'
+                    );
+                } else if (isMac || isLinux) {
+                    showStatus(
+                        '<strong>✓ Installer downloaded!</strong><br><br>' +
+                        '<strong>Open Terminal and run:</strong><br>' +
+                        '<code style=\"display: block; margin: 10px 0; padding: 8px; background: white; border-radius: 4px;\">python3 ~/Downloads/install-extension.py ' + selectedBrowser + '</code><br>' +
+                        'The extension will install automatically and ' + selectedBrowser + ' will open!',
+                        'success'
+                    );
+                }
+
+                btnText.textContent = 'Downloaded!';
+                btnIcon.innerHTML = '✓';
+
+            } catch (error) {
+                showStatus('✗ Error: ' + error.message, 'error');
+                btn.disabled = false;
+                btnText.textContent = 'Try Again';
+                btnIcon.innerHTML = '📥';
             }
-        }
-
-        function installWindows(btn, btnText, btnIcon) {
-            showStatus('⏳ Preparing installer...', 'info');
-            btn.disabled = true;
-
-            // Download PowerShell script
-            fetch(GITHUB_INSTALLER_PS1)
-                .then(r => r.text())
-                .then(script => {
-                    // Modify script for this browser choice
-                    const modifiedScript = script.replace(
-                        "param(\n    [ValidateSet('Chrome', 'Edge')]\n    [string]$Browser = 'Chrome',",
-                        `param(\n    [ValidateSet('Chrome', 'Edge')]\n    [string]$Browser = '${selectedBrowser === 'edge' ? 'Edge' : 'Chrome'}',`
-                    );
-
-                    // Create blob and download
-                    const blob = new Blob([modifiedScript], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'install-extension.ps1';
-                    a.click();
-                    URL.revokeObjectURL(url);
-
-                    showStatus(
-                        '✓ Installer downloaded! Now:\n\n' +
-                        '1. Right-click the downloaded file\n' +
-                        '2. Select "Run with PowerShell"\n' +
-                        '3. If prompted, click "Yes" to allow\n' +
-                        '4. The extension will install automatically',
-                        'success'
-                    );
-                    btnText.textContent = 'Downloaded - Check your Downloads folder';
-                    btnIcon.textContent = '✓';
-                })
-                .catch(err => {
-                    showStatus('✗ Failed to download installer: ' + err.message, 'error');
-                    btn.disabled = false;
-                });
-        }
-
-        function installUnix(btn, btnText, btnIcon) {
-            showStatus('⏳ Preparing installer...', 'info');
-            btn.disabled = true;
-
-            fetch(GITHUB_INSTALLER_SH)
-                .then(r => r.text())
-                .then(script => {
-                    // Modify script for this browser choice
-                    const modifiedScript = script.replace(
-                        'BROWSER="${1:-chrome}"',
-                        `BROWSER="${selectedBrowser === 'edge' ? 'edge' : 'chrome'}"`
-                    );
-
-                    // Create blob and download
-                    const blob = new Blob([modifiedScript], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'install-extension.sh';
-                    a.click();
-                    URL.revokeObjectURL(url);
-
-                    showStatus(
-                        '✓ Installer downloaded!\n\n' +
-                        'In Terminal, run:\n' +
-                        'chmod +x install-extension.sh\n' +
-                        './install-extension.sh\n\n' +
-                        'Or double-click the file.',
-                        'success'
-                    );
-                    btnText.textContent = 'Downloaded - Check your Downloads folder';
-                    btnIcon.textContent = '✓';
-                })
-                .catch(err => {
-                    showStatus('✗ Failed to download installer: ' + err.message, 'error');
-                    btn.disabled = false;
-                });
-        }
-
-        function downloadZip() {
-            window.location.href = GITHUB_ZIP_URL;
-            showStatus('📦 Zip file downloading. Extract and load unpacked in chrome://extensions/', 'info');
         }
 
         // Detect browser on load
