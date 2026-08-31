@@ -1,1 +1,6 @@
-{"version": "1", "build": {"command": "echo 'No build step needed'", "publish": "."}}
+[build]
+  command = "echo 'Static site - no build needed'"
+  publish = "."
+
+[context.production]
+  publish = "."
