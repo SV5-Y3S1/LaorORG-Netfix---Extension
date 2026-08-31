@@ -1,6 +1,6 @@
-[build]
-  command = "echo 'Static site - no build needed'"
-  publish = "."
-
-[context.production]
-  publish = "."
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self' https: data:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
