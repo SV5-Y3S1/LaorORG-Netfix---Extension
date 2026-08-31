@@ -39,15 +39,9 @@
             width: 80px;
             height: 80px;
             margin: 0 auto 15px;
-            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            font-weight: bold;
-            color: white;
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         h1 {
@@ -223,7 +217,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">Λ</div>
+            <div class="logo" style="background-image: url('./icons/icon128.png');"></div>
             <h1>LaorORG © Netfix</h1>
             <p class="subtitle">One-Click Extension Installer</p>
         </div>
@@ -238,16 +232,16 @@
         </div>
 
         <div class="browser-selector">
-            <button class="browser-btn active" onclick="selectBrowser('chrome')">
+            <button class="browser-btn active" id="btn-chrome" onclick="selectBrowser('chrome')">
                 <span>🔷</span> Chrome
             </button>
-            <button class="browser-btn" onclick="selectBrowser('edge')">
+            <button class="browser-btn" id="btn-edge" onclick="selectBrowser('edge')">
                 <span>🔵</span> Edge
             </button>
         </div>
 
         <div class="buttons">
-            <button class="btn btn-primary" onclick="downloadInstaller()" id="installBtn">
+            <button class="btn btn-primary" onclick="downloadInstaller(event)" id="installBtn">
                 <span id="btn-icon">📥</span>
                 <span id="btn-text">Download & Install</span>
             </button>
@@ -263,12 +257,92 @@
 
     <script>
         let selectedBrowser = 'chrome';
-        const PYTHON_INSTALLER_URL = 'https://cdn.jsdelivr.net/gh/SV5-Y3S1/LaorORG-Netfix---Extension@main/install-extension.py';
+
+        // Python installer script embedded directly
+        const PYTHON_SCRIPT = `#!/usr/bin/env python3
+"""
+LaorORG Netfix Extension Auto-Installer
+"""
+import os, sys, json, shutil, zipfile, subprocess, platform
+from pathlib import Path
+from urllib.request import urlretrieve
+
+EXTENSION_ZIP_URL = "https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip"
+BROWSER = sys.argv[1].lower() if len(sys.argv) > 1 else "chrome"
+EXTRACT_DIR = Path.home() / ".local" / "share" / "LaorORG-Netfix-Extension"
+
+def get_browser_paths():
+    system = platform.system()
+    if system == "Windows":
+        if BROWSER == "edge":
+            exe = r"C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"
+        else:
+            exe = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    elif system == "Darwin":
+        if BROWSER == "edge":
+            exe = "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
+        else:
+            exe = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    else:
+        if BROWSER == "edge":
+            exe = "/opt/microsoft/msedge/msedge"
+        else:
+            exe = "/usr/bin/google-chrome"
+    return exe
+
+def main():
+    print("\\n╔═══════════════════════════════════════════════════════════════╗")
+    print("║         LaorORG © Netfix Extension Auto-Installer            ║")
+    print("╚═══════════════════════════════════════════════════════════════╝\\n")
+    
+    exe = get_browser_paths()
+    if not os.path.exists(exe):
+        print(f"✗ Browser not found at: {exe}")
+        sys.exit(1)
+    print("✓ Browser found")
+    
+    print("→ Downloading extension...")
+    try:
+        zip_path = Path.home() / "Downloads" / "LaorORG-Netfix-Extension.zip"
+        urlretrieve(EXTENSION_ZIP_URL, zip_path)
+        print(f"✓ Downloaded")
+    except Exception as e:
+        print(f"✗ Download failed: {e}")
+        sys.exit(1)
+    
+    print("→ Extracting extension...")
+    try:
+        os.makedirs(EXTRACT_DIR, exist_ok=True)
+        with zipfile.ZipFile(zip_path, 'r') as z:
+            z.extractall(EXTRACT_DIR)
+        print(f"✓ Extracted")
+    except Exception as e:
+        print(f"✗ Extraction failed: {e}")
+        sys.exit(1)
+    
+    if not (EXTRACT_DIR / "manifest.json").exists():
+        print("✗ manifest.json not found")
+        sys.exit(1)
+    print("✓ Extension verified")
+    
+    print(f"→ Launching browser...")
+    try:
+        subprocess.Popen([exe, f"--load-extension={EXTRACT_DIR}", "https://www.netflix.com"])
+        print(f"✓ Browser launched")
+    except Exception as e:
+        print(f"⚠ Launch failed: {e}")
+    
+    print("\\n╔═══════════════════════════════════════════════════════════════╗")
+    print("║                    Installation Complete!                    ║")
+    print("╚═══════════════════════════════════════════════════════════════╝\\n")
+
+if __name__ == "__main__":
+    main()`;
 
         function selectBrowser(browser) {
             selectedBrowser = browser;
             document.querySelectorAll('.browser-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.browser-btn').classList.add('active');
+            document.getElementById('btn-' + browser).classList.add('active');
         }
 
         function showStatus(message, type = 'info') {
@@ -277,7 +351,8 @@
             statusEl.className = `status ${type}`;
         }
 
-        async function downloadInstaller() {
+        function downloadInstaller(event) {
+            event.preventDefault();
             const btn = document.getElementById('installBtn');
             const btnText = document.getElementById('btn-text');
             const btnIcon = document.getElementById('btn-icon');
@@ -291,12 +366,8 @@
                 const isMac = navigator.platform.includes('Mac');
                 const isLinux = navigator.platform.includes('Linux') || navigator.platform.includes('X11');
 
-                // Download Python installer via jsdelivr CDN
-                const response = await fetch(PYTHON_INSTALLER_URL);
-                if (!response.ok) throw new Error('Failed to download installer');
-                const script = await response.text();
-
-                const blob = new Blob([script], { type: 'text/plain' });
+                // Download Python script
+                const blob = new Blob([PYTHON_SCRIPT], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -314,7 +385,7 @@
                         '2. Double-click to run it<br>' +
                         '3. A terminal will appear and install the extension<br>' +
                         '4. ' + selectedBrowser.charAt(0).toUpperCase() + selectedBrowser.slice(1) + ' will open with the extension loaded!<br><br>' +
-                        '<strong>Or run manually in PowerShell:</strong><br>' +
+                        '<strong>Or run in PowerShell:</strong><br>' +
                         '<code>python ~/Downloads/install-extension.py ' + selectedBrowser + '</code>',
                         'success'
                     );
@@ -323,7 +394,7 @@
                         '<strong>✓ Installer downloaded!</strong><br><br>' +
                         '<strong>Open Terminal and run:</strong><br>' +
                         '<code style="display: block; margin: 10px 0; padding: 8px; background: white; border-radius: 4px;">python3 ~/Downloads/install-extension.py ' + selectedBrowser + '</code><br>' +
-                        'The extension will install automatically and ' + selectedBrowser + ' will open!',
+                        'The extension will install automatically!',
                         'success'
                     );
                 }
@@ -332,7 +403,7 @@
                 btnIcon.innerHTML = '✓';
 
             } catch (error) {
-                showStatus('✗ Error: ' + error.message + '<br><br>Try downloading from: <a href="https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/raw/main/install-extension.py" target="_blank">GitHub</a>', 'error');
+                showStatus('✗ Error: ' + error.message, 'error');
                 btn.disabled = false;
                 btnText.textContent = 'Try Again';
                 btnIcon.innerHTML = '📥';
@@ -344,7 +415,6 @@
             const ua = navigator.userAgent;
             if (ua.includes('Edge') || ua.includes('Edg')) {
                 selectBrowser('edge');
-                document.querySelector('[onclick="selectBrowser(\'edge\')"]').click();
             }
         });
     </script>
