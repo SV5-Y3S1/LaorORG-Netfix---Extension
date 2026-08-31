@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaorORG © Netfix - Auto Install</title>
+    <title>LaorORG © Netfix - Instant Install</title>
     <style>
         * {
             margin: 0;
@@ -86,19 +86,23 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            text-decoration: none;
         }
 
         .btn-primary {
             background: #667eea;
             color: white;
-            text-decoration: none;
-            font-weight: 600;
         }
 
         .btn-primary:hover {
             background: #5568d3;
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary.installing {
+            background: #999;
+            cursor: not-allowed;
         }
 
         .status {
@@ -131,6 +135,13 @@
             display: block;
         }
 
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+            display: block;
+        }
+
         .spinner {
             display: inline-block;
             width: 16px;
@@ -153,34 +164,6 @@
             padding-top: 20px;
         }
 
-        .browser-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .browser-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s ease;
-        }
-
-        .browser-btn.active {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
-        }
-
-        .browser-btn:hover {
-            border-color: #667eea;
-        }
-
         .warning {
             background: #fff3cd;
             border: 1px solid #ffc107;
@@ -193,24 +176,6 @@
             line-height: 1.5;
         }
 
-        .steps {
-            text-align: left;
-            background: #e7f3ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border-left: 4px solid #667eea;
-        }
-
-        .steps ol {
-            margin-left: 20px;
-        }
-
-        .steps li {
-            margin: 8px 0;
-            font-size: 13px;
-        }
-
         code {
             background: #f5f5f5;
             padding: 2px 6px;
@@ -218,8 +183,13 @@
             font-family: 'Courier New', monospace;
         }
 
-        a {
-            color: #667eea;
+        .step {
+            background: #e7f3ff;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            text-align: left;
+            border-left: 4px solid #667eea;
         }
     </style>
 </head>
@@ -228,91 +198,73 @@
         <div class="header">
             <div class="logo" style="background-image: url('./icons/icon128.png');"></div>
             <h1>LaorORG © Netfix</h1>
-            <p class="subtitle">Auto Install Extension</p>
+            <p class="subtitle">Instant Auto-Install</p>
         </div>
 
         <div class="description">
-            <strong>Install with one click.</strong><br>
-            The simplest way to get Netflix cookies injected!
+            <strong>Click once to install.</strong><br>
+            The extension loads instantly into your browser!
         </div>
 
         <div class="warning">
             ⚠️ <strong>Important:</strong> Using unauthorized Netflix cookies may violate their Terms of Service. Use only on accounts you own.
         </div>
 
-        <div class="browser-selector">
-            <button class="browser-btn active" id="btn-chrome" onclick="selectBrowser('chrome')">
-                <span>🔷</span> Chrome
-            </button>
-            <button class="browser-btn" id="btn-edge" onclick="selectBrowser('edge')">
-                <span>🔵</span> Edge
-            </button>
-        </div>
-
         <div class="buttons">
-            <a href="#" class="btn btn-primary" id="installLink" onclick="handleInstall(event)">
-                <span>⚡</span>
-                <span>Start Installation</span>
-            </a>
+            <button class="btn btn-primary" onclick="installNow()">
+                <span id="btn-icon">⚡</span>
+                <span id="btn-text">Install Extension Now</span>
+            </button>
         </div>
 
         <div id="status" class="status"></div>
 
-        <div id="steps" class="steps" style="display: none;">
-            <strong>📋 Quick Steps:</strong>
-            <ol>
-                <li>Click the button above to start</li>
-                <li>Browser will open extensions page</li>
-                <li>Click <strong>"Load unpacked"</strong></li>
-                <li>Select the extension folder when prompted</li>
-                <li>Done! Extension is installed</li>
-            </ol>
-        </div>
-
         <div class="footer">
-            <p><strong>Platform:</strong> Chrome & Edge</p>
-            <p>Version 1.0.0 • © 2026 LaorORG</p>
+            <p><strong>Version:</strong> 1.0.0 • © 2026 LaorORG</p>
         </div>
     </div>
 
     <script>
-        let selectedBrowser = 'chrome';
-
-        function selectBrowser(browser) {
-            selectedBrowser = browser;
-            document.querySelectorAll('.browser-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('btn-' + browser).classList.add('active');
-        }
-
         function showStatus(message, type = 'info') {
             const statusEl = document.getElementById('status');
             statusEl.innerHTML = message;
             statusEl.className = `status ${type}`;
         }
 
-        async function handleInstall(event) {
-            event.preventDefault();
+        async function installNow() {
+            const btn = document.querySelector('.btn-primary');
+            const btnIcon = document.getElementById('btn-icon');
+            const btnText = document.getElementById('btn-text');
 
-            const btn = document.getElementById('installLink');
-            btn.style.pointerEvents = 'none';
-            btn.style.opacity = '0.7';
+            btn.disabled = true;
+            btn.classList.add('installing');
+            btnIcon.innerHTML = '<span class="spinner"></span>';
+            btnText.textContent = 'Installing...';
 
             try {
-                // Show downloading status
-                showStatus('📥 Downloading extension... This is a one-time setup.', 'info');
-                document.getElementById('steps').style.display = 'block';
+                // Check if browser is Chrome or Edge
+                const ua = navigator.userAgent;
+                const isChrome = /Chrome/.test(ua) && /Google Inc/.test(navigator.vendor);
+                const isEdge = /Edg/.test(ua);
 
-                // Download the extension ZIP
+                if (!isChrome && !isEdge) {
+                    throw new Error('Please use Chrome or Edge browser');
+                }
+
+                showStatus('⏳ Step 1: Downloading extension...', 'info');
+
+                // Download extension ZIP from GitHub
                 const zipUrl = 'https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip';
                 const response = await fetch(zipUrl);
                 
                 if (!response.ok) {
-                    throw new Error('Download failed. Please try again.');
+                    throw new Error('Failed to download. Check your internet connection.');
                 }
 
+                showStatus('⏳ Step 2: Processing extension...', 'info');
                 const blob = await response.blob();
 
-                // Create a download link that triggers download
+                // Save to Downloads folder
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -320,37 +272,60 @@
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                URL.revokeObjectURL(url);
 
-                // Show next steps
                 showStatus(
-                    '<strong style="font-size: 16px;">✓ Extension downloaded!</strong><br><br>' +
-                    '📂 <strong>Next:</strong><br>' +
-                    '1. Extract the downloaded <code>LaorORG-Netfix-Extension.zip</code><br>' +
-                    '2. Open <code>' + (selectedBrowser === 'edge' ? 'edge://extensions/' : 'chrome://extensions/') + '</code><br>' +
-                    '3. Toggle <strong>Developer mode</strong> (top right)<br>' +
-                    '4. Click <strong>Load unpacked</strong><br>' +
-                    '5. Select the extracted extension folder<br><br>' +
-                    '✓ Extension installed! Netflix cookie injection ready!',
+                    '<strong style="font-size: 16px;">✓ Downloaded Successfully!</strong><br><br>' +
+                    '<div class="step">' +
+                    '<strong>📍 Next - Follow These Steps:</strong><br>' +
+                    '1. <strong>Extract</strong> the <code>LaorORG-Netfix-Extension.zip</code> file<br>' +
+                    '2. Open <strong>' + (isEdge ? 'edge://extensions/' : 'chrome://extensions/') + '</strong><br>' +
+                    '3. Enable <strong>"Developer mode"</strong> (toggle in top-right)<br>' +
+                    '4. Click <strong>"Load unpacked"</strong><br>' +
+                    '5. Select the <strong>extracted folder</strong><br>' +
+                    '6. ✓ <strong>Done!</strong> Extension installed!' +
+                    '</div><br>' +
+                    '<strong>Then:</strong> Open Netflix and click the LaorORG icon to inject cookies!',
                     'success'
                 );
 
-                // Open extensions page
+                btnText.textContent = 'Check Downloads!';
+                btnIcon.innerHTML = '✓';
+
+                // Auto-open extensions page
                 setTimeout(() => {
-                    window.open(selectedBrowser === 'edge' ? 'edge://extensions/' : 'chrome://extensions/', '_blank');
-                }, 500);
+                    window.open(isEdge ? 'edge://extensions/' : 'chrome://extensions/', '_blank');
+                }, 1000);
+
+                // Disable retry
+                btn.style.pointerEvents = 'none';
 
             } catch (error) {
-                showStatus('❌ ' + error.message, 'error');
-                btn.style.pointerEvents = 'auto';
-                btn.style.opacity = '1';
+                showStatus(
+                    '<strong>✗ Error:</strong> ' + error.message + '<br><br>' +
+                    'Make sure you are using <strong>Chrome or Edge</strong> browser<br>' +
+                    'Then click the button again to retry',
+                    'error'
+                );
+
+                btn.disabled = false;
+                btn.classList.remove('installing');
+                btnIcon.innerHTML = '⚡';
+                btnText.textContent = 'Try Again';
             }
         }
 
+        // Auto-install on page load if user has already agreed
         window.addEventListener('load', () => {
-            const ua = navigator.userAgent;
-            if (ua.includes('Edge') || ua.includes('Edg')) {
-                selectBrowser('edge');
+            // Check if coming from a direct link
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('auto') === 'true') {
+                // Show warning first
+                showStatus(
+                    '<strong>⚠️ Important:</strong> This will download and install the Netflix cookie extension.<br><br>' +
+                    'Click <strong>Install Extension Now</strong> to proceed.<br>' +
+                    'Make sure you trust this source!',
+                    'warning'
+                );
             }
         });
     </script>
