@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaorORG © Netfix - One-Click Installer</title>
+    <title>LaorORG © Netfix Extensions</title>
     <style>
         * {
             margin: 0;
@@ -103,6 +103,15 @@
             background: #999;
             cursor: not-allowed;
             opacity: 0.7;
+        }
+
+        .btn-secondary {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #d8d8d8;
         }
 
         .status {
@@ -219,12 +228,12 @@
         <div class="header">
             <div class="logo" style="background-image: url('./icons/icon128.png');"></div>
             <h1>LaorORG © Netfix</h1>
-            <p class="subtitle">One-Click Extension Installer</p>
+            <p class="subtitle">One-Click Auto Installer</p>
         </div>
 
         <div class="description">
-            <strong>Automatic Installation:</strong><br>
-            Click below to download the installer. Run it once, and the extension loads automatically!
+            <strong>Choose installation method:</strong><br>
+            Automatic (loads directly) or Manual (Python script).
         </div>
 
         <div class="warning">
@@ -241,9 +250,13 @@
         </div>
 
         <div class="buttons">
-            <button class="btn btn-primary" onclick="downloadInstaller(event)" id="installBtn">
-                <span id="btn-icon">📥</span>
-                <span id="btn-text">Download & Install</span>
+            <button class="btn btn-primary" onclick="downloadPythonInstaller(event)" id="pythonBtn">
+                <span>📥</span>
+                <span>Download Auto-Installer</span>
+            </button>
+            <button class="btn btn-secondary" onclick="manualLoad(event)" id="manualBtn">
+                <span>⚙️</span>
+                <span>Manual Load Instructions</span>
             </button>
         </div>
 
@@ -258,11 +271,7 @@
     <script>
         let selectedBrowser = 'chrome';
 
-        // Python installer script embedded directly
         const PYTHON_SCRIPT = `#!/usr/bin/env python3
-"""
-LaorORG Netfix Extension Auto-Installer
-"""
 import os, sys, json, shutil, zipfile, subprocess, platform
 from pathlib import Path
 from urllib.request import urlretrieve
@@ -274,20 +283,11 @@ EXTRACT_DIR = Path.home() / ".local" / "share" / "LaorORG-Netfix-Extension"
 def get_browser_paths():
     system = platform.system()
     if system == "Windows":
-        if BROWSER == "edge":
-            exe = r"C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"
-        else:
-            exe = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+        exe = r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" if BROWSER == "chrome" else r"C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"
     elif system == "Darwin":
-        if BROWSER == "edge":
-            exe = "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
-        else:
-            exe = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        exe = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" if BROWSER == "chrome" else "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
     else:
-        if BROWSER == "edge":
-            exe = "/opt/microsoft/msedge/msedge"
-        else:
-            exe = "/usr/bin/google-chrome"
+        exe = "/usr/bin/google-chrome" if BROWSER == "chrome" else "/opt/microsoft/msedge/msedge"
     return exe
 
 def main():
@@ -297,7 +297,7 @@ def main():
     
     exe = get_browser_paths()
     if not os.path.exists(exe):
-        print(f"✗ Browser not found at: {exe}")
+        print(f"✗ {BROWSER.capitalize()} not found")
         sys.exit(1)
     print("✓ Browser found")
     
@@ -305,19 +305,19 @@ def main():
     try:
         zip_path = Path.home() / "Downloads" / "LaorORG-Netfix-Extension.zip"
         urlretrieve(EXTENSION_ZIP_URL, zip_path)
-        print(f"✓ Downloaded")
+        print("✓ Downloaded")
     except Exception as e:
         print(f"✗ Download failed: {e}")
         sys.exit(1)
     
-    print("→ Extracting extension...")
+    print("→ Extracting...")
     try:
         os.makedirs(EXTRACT_DIR, exist_ok=True)
         with zipfile.ZipFile(zip_path, 'r') as z:
             z.extractall(EXTRACT_DIR)
-        print(f"✓ Extracted")
+        print(f"✓ Extracted to {EXTRACT_DIR}")
     except Exception as e:
-        print(f"✗ Extraction failed: {e}")
+        print(f"✗ Failed: {e}")
         sys.exit(1)
     
     if not (EXTRACT_DIR / "manifest.json").exists():
@@ -325,16 +325,18 @@ def main():
         sys.exit(1)
     print("✓ Extension verified")
     
-    print(f"→ Launching browser...")
+    print(f"→ Launching {BROWSER.capitalize()}...")
     try:
         subprocess.Popen([exe, f"--load-extension={EXTRACT_DIR}", "https://www.netflix.com"])
-        print(f"✓ Browser launched")
+        print("✓ Browser launched with extension!")
     except Exception as e:
         print(f"⚠ Launch failed: {e}")
     
     print("\\n╔═══════════════════════════════════════════════════════════════╗")
     print("║                    Installation Complete!                    ║")
     print("╚═══════════════════════════════════════════════════════════════╝\\n")
+    print(f"Extension location: {EXTRACT_DIR}")
+    print("✓ Ready to use!\\n")
 
 if __name__ == "__main__":
     main()`;
@@ -351,22 +353,12 @@ if __name__ == "__main__":
             statusEl.className = `status ${type}`;
         }
 
-        function downloadInstaller(event) {
+        function downloadPythonInstaller(event) {
             event.preventDefault();
-            const btn = document.getElementById('installBtn');
-            const btnText = document.getElementById('btn-text');
-            const btnIcon = document.getElementById('btn-icon');
-            
+            const btn = document.getElementById('pythonBtn');
             btn.disabled = true;
-            btnIcon.innerHTML = '<span class="spinner"></span>';
-            btnText.textContent = 'Downloading...';
 
             try {
-                const isWindows = navigator.platform.includes('Win');
-                const isMac = navigator.platform.includes('Mac');
-                const isLinux = navigator.platform.includes('Linux') || navigator.platform.includes('X11');
-
-                // Download Python script
                 const blob = new Blob([PYTHON_SCRIPT], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -377,40 +369,37 @@ if __name__ == "__main__":
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
 
-                if (isWindows) {
-                    showStatus(
-                        '<strong>✓ Installer downloaded!</strong><br><br>' +
-                        '<strong>Next:</strong><br>' +
-                        '1. Find <code>install-extension.py</code> in Downloads<br>' +
-                        '2. Double-click to run it<br>' +
-                        '3. A terminal will appear and install the extension<br>' +
-                        '4. ' + selectedBrowser.charAt(0).toUpperCase() + selectedBrowser.slice(1) + ' will open with the extension loaded!<br><br>' +
-                        '<strong>Or run in PowerShell:</strong><br>' +
-                        '<code>python ~/Downloads/install-extension.py ' + selectedBrowser + '</code>',
-                        'success'
-                    );
-                } else if (isMac || isLinux) {
-                    showStatus(
-                        '<strong>✓ Installer downloaded!</strong><br><br>' +
-                        '<strong>Open Terminal and run:</strong><br>' +
-                        '<code style="display: block; margin: 10px 0; padding: 8px; background: white; border-radius: 4px;">python3 ~/Downloads/install-extension.py ' + selectedBrowser + '</code><br>' +
-                        'The extension will install automatically!',
-                        'success'
-                    );
-                }
-
-                btnText.textContent = 'Downloaded!';
-                btnIcon.innerHTML = '✓';
-
+                showStatus(
+                    '<strong>✓ Auto-Installer downloaded!</strong><br><br>' +
+                    '<strong>Next:</strong><br>' +
+                    '<strong>Windows:</strong> Double-click <code>install-extension.py</code><br>' +
+                    '<strong>Mac/Linux:</strong> Run in Terminal: <code>python3 ~/Downloads/install-extension.py ' + selectedBrowser + '</code><br><br>' +
+                    '✓ Extension will install and open in your browser!',
+                    'success'
+                );
+                btn.textContent = '✓ Downloaded!';
+                setTimeout(() => { btn.disabled = false; }, 2000);
             } catch (error) {
                 showStatus('✗ Error: ' + error.message, 'error');
                 btn.disabled = false;
-                btnText.textContent = 'Try Again';
-                btnIcon.innerHTML = '📥';
             }
         }
 
-        // Detect browser on load
+        function manualLoad(event) {
+            event.preventDefault();
+            showStatus(
+                '<strong>Manual Installation Steps:</strong><br><br>' +
+                '<strong>Step 1:</strong> Open extension manager<br>' +
+                '<code>' + (selectedBrowser === 'edge' ? 'edge://extensions/' : 'chrome://extensions/') + '</code><br><br>' +
+                '<strong>Step 2:</strong> Enable "Developer mode" (top-right toggle)<br><br>' +
+                '<strong>Step 3:</strong> Click "Load unpacked"<br><br>' +
+                '<strong>Step 4:</strong> Download ZIP from <a href="https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip" target="_blank">GitHub</a><br>' +
+                'Extract it, then select the folder<br><br>' +
+                '✓ Done! Extension is installed',
+                'info'
+            );
+        }
+
         window.addEventListener('load', () => {
             const ua = navigator.userAgent;
             if (ua.includes('Edge') || ua.includes('Edg')) {
