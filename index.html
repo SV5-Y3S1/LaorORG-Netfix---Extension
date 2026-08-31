@@ -39,9 +39,15 @@
             width: 80px;
             height: 80px;
             margin: 0 auto 15px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
         }
 
         h1 {
@@ -86,7 +92,6 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            text-decoration: none;
         }
 
         .btn-primary {
@@ -103,6 +108,18 @@
         .btn-primary:disabled {
             background: #999;
             cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-secondary {
+            background: #e8e8e8;
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .btn-secondary:hover {
+            background: #d8d8d8;
         }
 
         .status {
@@ -176,6 +193,15 @@
             font-family: 'Courier New', monospace;
         }
 
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
         .step {
             background: #e7f3ff;
             padding: 12px;
@@ -189,7 +215,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo" style="background-image: url('./icons/icon128.png');"></div>
+            <div class="logo">Λ</div>
             <h1>LaorORG © Netfix</h1>
             <p class="subtitle">Instant Auto-Install</p>
         </div>
@@ -208,6 +234,10 @@
                 <span id="btn-icon">⚡</span>
                 <span id="btn-text">Install Extension Now</span>
             </button>
+            <a href="https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip" class="btn btn-secondary" download>
+                <span>📥</span>
+                <span>Direct Download</span>
+            </a>
         </div>
 
         <div id="status" class="status"></div>
@@ -243,80 +273,86 @@
                     throw new Error('Please use Chrome or Edge browser');
                 }
 
-                showStatus('⏳ Step 1: Downloading extension...', 'info');
+                showStatus('⏳ Downloading extension...', 'info');
 
-                // Try multiple download sources in order
+                // Direct download with multiple fallbacks
                 const downloadUrls = [
-                    'https://cdn.jsdelivr.net/gh/SV5-Y3S1/LaorORG-Netfix---Extension@main/LaorORG-Netfix-Extension.zip',
-                    'https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip'
+                    'https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip',
+                    'https://cdn.jsdelivr.net/gh/SV5-Y3S1/LaorORG-Netfix---Extension@main/LaorORG-Netfix-Extension.zip'
                 ];
 
                 let blob = null;
-                let lastError = null;
+                let success = false;
 
                 for (const url of downloadUrls) {
                     try {
-                        const response = await fetch(url, { 
+                        const response = await fetch(url, {
                             method: 'GET',
-                            mode: 'cors'
+                            cache: 'no-cache'
                         });
-                        
-                        if (response.ok) {
+
+                        if (response.ok && response.blob) {
                             blob = await response.blob();
-                            break;
+                            if (blob.size > 0) {
+                                success = true;
+                                break;
+                            }
                         }
                     } catch (e) {
-                        lastError = e;
+                        console.log('Source failed, trying next...', e);
                         continue;
                     }
                 }
 
-                if (!blob) {
-                    throw new Error('Failed to download from all sources. Please try again or use manual installation.');
+                if (!success || !blob) {
+                    throw new Error('Could not download from any source');
                 }
 
-                showStatus('⏳ Step 2: Processing extension...', 'info');
+                showStatus('⏳ Starting download...', 'info');
 
-                // Save to Downloads folder
+                // Trigger download
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'LaorORG-Netfix-Extension.zip';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                // Wait a bit before revoking
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'LaorORG-Netfix-Extension.zip';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
                 setTimeout(() => URL.revokeObjectURL(url), 100);
 
+                // Show success message
                 showStatus(
-                    '<strong style="font-size: 16px;">✓ Downloaded Successfully!</strong><br><br>' +
+                    '<strong style="font-size: 16px;">✓ Download Started!</strong><br><br>' +
                     '<div class="step">' +
-                    '<strong>📍 Next - Follow These Steps:</strong><br>' +
-                    '1. <strong>Extract</strong> the <code>LaorORG-Netfix-Extension.zip</code> file<br>' +
-                    '2. Open <strong>' + (isEdge ? 'edge://extensions/' : 'chrome://extensions/') + '</strong><br>' +
-                    '3. Enable <strong>"Developer mode"</strong> (toggle in top-right)<br>' +
-                    '4. Click <strong>"Load unpacked"</strong><br>' +
-                    '5. Select the <strong>extracted folder</strong><br>' +
-                    '6. ✓ <strong>Done!</strong> Extension installed!' +
+                    '<strong>📍 Next Steps:</strong><br>' +
+                    '1. Find <code>LaorORG-Netfix-Extension.zip</code> in Downloads<br>' +
+                    '2. <strong>Extract</strong> the ZIP file<br>' +
+                    '3. Open <strong>' + (isEdge ? 'edge://extensions/' : 'chrome://extensions/') + '</strong><br>' +
+                    '4. Enable <strong>"Developer mode"</strong> (top-right)<br>' +
+                    '5. Click <strong>"Load unpacked"</strong><br>' +
+                    '6. Select the extracted folder<br>' +
+                    '7. ✓ Done! Extension installed!' +
                     '</div><br>' +
-                    '<strong>Then:</strong> Open Netflix and click the LaorORG icon!',
+                    '<strong>Open Netflix and click the icon to inject cookies!</strong>',
                     'success'
                 );
 
-                btnText.textContent = 'Check Downloads!';
+                btnText.textContent = 'Downloaded!';
                 btnIcon.innerHTML = '✓';
 
-                // Auto-open extensions page
+                // Open extensions page automatically
                 setTimeout(() => {
                     window.open(isEdge ? 'edge://extensions/' : 'chrome://extensions/', '_blank');
-                }, 1000);
+                }, 1500);
 
             } catch (error) {
+                console.error('Install error:', error);
+                
                 showStatus(
-                    '<strong>✗ Error:</strong> ' + error.message + '<br><br>' +
-                    '<strong>Alternative:</strong> Download manually from<br>' +
-                    '<a href="https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip" target="_blank">GitHub</a>',
+                    '<strong>✗ Auto-download failed</strong><br><br>' +
+                    'Use the <strong>Direct Download</strong> button instead<br>' +
+                    'Or visit: <a href="https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases" target="_blank">GitHub Releases</a>',
                     'error'
                 );
 
