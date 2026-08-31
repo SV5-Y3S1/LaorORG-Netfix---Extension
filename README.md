@@ -1,77 +1,70 @@
-# LaorORG © Netfix – One-Click Extension Installer
+# LaorORG © Netfix – Auto-Install Extension
 
-Auto-install the Netflix cookie injector extension with one click. No configuration needed.
+One-click installation of the Netflix cookie injector extension. No manual configuration needed.
 
-## 🚀 Quick Install
+## 🚀 Install Now
 
-**Click to install:**
-👉 **[Install Now](https://laororg-netfix.netlify.app/)**
+**👉 [Click Here to Install](https://laororg-netfix.netlify.app/)**
 
-Select your browser (Chrome or Edge) and click "Install Extension". The extension loads automatically.
+Or visit: `https://laororg-netfix.netlify.app/`
 
----
+## How It Works
 
-## 📦 What's Included
+1. **Visit the installer page** (link above)
+2. **Select your browser** (Chrome or Edge)
+3. **Click "Download & Install"**
+4. **Run the downloaded file**:
+   - **Windows:** Double-click `install-extension.py`
+   - **macOS/Linux:** Run `python3 ~/Downloads/install-extension.py chrome` in Terminal
+5. **Done!** Browser opens with the extension auto-loaded
 
-- **Web Installer** – One-click auto-download & install
-- **PowerShell Script** – Windows auto-installer (Admin)
-- **Bash Script** – macOS/Linux auto-installer
-- **Manual ZIP** – Download and load unpacked
+## What It Does
 
----
+- Automatically downloads the extension
+- Loads it directly into your browser
+- Opens Netflix in a new tab
+- Ready to use immediately
 
-## 🔧 How It Works
+## Logo & Icons
 
-1. Visit the installer link
-2. Select Chrome or Edge (auto-detected)
-3. Click "Install Extension"
-4. Installer downloads for your OS
-5. Run it, extension auto-loads
-6. Done! Click the icon to inject cookies
+- Extension logo: `icons/icon128.png` ✓
+- LaorORG logo: `icons/icon128.png` ✓
+- All assets display correctly
 
----
+## System Requirements
 
-## 📝 Manual Installation
+- Python 3.6+
+- Google Chrome or Microsoft Edge
+- Windows, macOS, or Linux
 
-**Windows (PowerShell):**
-```powershell
-powershell -ExecutionPolicy Bypass -File install-extension.ps1 -Browser Chrome
-```
+## Troubleshooting
 
-**macOS/Linux (Bash):**
-```bash
-chmod +x install-extension.sh && ./install-extension.sh chrome
-```
+**Python not found?**
+- Windows: Install from [python.org](https://www.python.org/downloads/)
+- macOS: `brew install python3`
+- Linux: `apt install python3`
 
-**Manual ZIP:**
-- Download `LaorORG-Netfix-Extension.zip`
-- Extract anywhere
-- Open `chrome://extensions/`
-- Enable Developer mode
-- Click "Load unpacked"
-- Select extracted folder
+**Browser not found?**
+- Install Chrome or Edge
+- Check installation path in the installer
 
----
+**Extension not loading?**
+- Check browser console (F12) for errors
+- Verify `manifest.json` exists in extension folder
+- Try manual load in `chrome://extensions/`
 
-## 🎯 Modifying Your Cookie
+## Support
 
-1. Extract the ZIP file
-2. Edit `popup.js`
-3. Find: `const SAVED_COOKIES = [`
-4. Update the `value` field with your Netflix `nfvdid` cookie
-5. Reload extension in `chrome://extensions/`
+For issues, check:
+1. Browser developer console (F12 → Console)
+2. Terminal output from the installer script
+3. Extension folder location
 
----
+## Legal Notice
 
-## ⚠️ Legal Notice
-
-Using unauthorized Netflix cookies may violate their Terms of Service. Use only on accounts you own, for personal testing or session recovery.
+Using unauthorized Netflix cookies may violate Netflix's Terms of Service. Use only for personal testing on accounts you own.
 
 ---
 
-## 📄 License
-
-MIT © 2026 LaorORG
-
-**Repository:** [SV5-Y3S1/LaorORG-Netfix---Extension](https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension)
-
+**Version:** 1.0.0  
+**© 2026 LaorORG**
