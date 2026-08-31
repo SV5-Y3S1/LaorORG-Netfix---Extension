@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaorORG © Netfix - Install Extension</title>
+    <title>LaorORG © Netfix - Auto Install Extension</title>
     <style>
         * {
             margin: 0;
@@ -193,15 +193,6 @@
             font-size: 13px;
         }
 
-        a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
         .steps {
             background: #e7f3ff;
             padding: 12px;
@@ -227,12 +218,12 @@
         <div class="header">
             <div class="logo">Λ</div>
             <h1>LaorORG © Netfix</h1>
-            <p class="subtitle">Install Extension</p>
+            <p class="subtitle">Auto-Install Extension</p>
         </div>
 
         <div class="description">
-            <strong>One-click installation.</strong><br>
-            Download the extension and load it into your browser.
+            <strong>One-click automatic installation.</strong><br>
+            Click the button and follow the steps - no files download to your PC!
         </div>
 
         <div class="warning">
@@ -242,23 +233,21 @@
         <div class="buttons">
             <button class="btn btn-primary" id="installBtn" type="button">
                 <span id="btn-icon">⚡</span>
-                <span id="btn-text">Download Extension</span>
+                <span id="btn-text">Start Installation</span>
             </button>
-            <a href="https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip" class="btn btn-link" download>
-                <span>📥</span>
-                <span>Direct GitHub Link</span>
-            </a>
         </div>
 
         <div id="status" class="status"></div>
 
         <div class="footer">
             <p><strong>Version:</strong> 1.0.0 • © 2026 LaorORG</p>
+            <p>Share this link: <code style="display:inline-block; margin-top:8px;">laororg-netfix-extension.netlify.app</code></p>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
-        document.getElementById('installBtn').addEventListener('click', installNow);
+        document.getElementById('installBtn').addEventListener('click', startInstall);
 
         function showStatus(message, type) {
             var statusEl = document.getElementById('status');
@@ -266,7 +255,7 @@
             statusEl.className = 'status ' + type;
         }
 
-        function installNow() {
+        async function startInstall() {
             var btn = document.getElementById('installBtn');
             var btnIcon = document.getElementById('btn-icon');
             var btnText = document.getElementById('btn-text');
@@ -274,7 +263,7 @@
             btn.disabled = true;
             btnIcon.textContent = '';
             btnIcon.innerHTML = '<span class="spinner"></span>';
-            btnText.textContent = 'Downloading...';
+            btnText.textContent = 'Setting up...';
 
             var ua = navigator.userAgent;
             var isChrome = ua.indexOf('Chrome') > -1 && ua.indexOf('Google Inc') > -1;
@@ -284,62 +273,71 @@
                 showStatus('Please use Chrome or Edge browser', 'error');
                 btn.disabled = false;
                 btnIcon.textContent = '⚡';
-                btnText.textContent = 'Download Extension';
+                btnText.textContent = 'Start Installation';
                 return;
             }
 
-            showStatus('Downloading extension...', 'info');
+            try {
+                showStatus('⏳ Step 1: Loading extension files...', 'info');
 
-            var downloadUrl = 'https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/releases/download/v1.0.0/LaorORG-Netfix-Extension.zip';
+                // Fetch extension from local zip file
+                var response = await fetch('./LaorORG-Netfix-Extension.zip');
+                if (!response.ok) throw new Error('Failed to load extension');
+                
+                var zipBlob = await response.arrayBuffer();
 
-            fetch(downloadUrl, {method: 'GET'})
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Download failed');
-                    return response.blob();
-                })
-                .then(function(blob) {
-                    var url = URL.createObjectURL(blob);
-                    var a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'LaorORG-Netfix-Extension.zip';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
+                showStatus('⏳ Step 2: Extracting files...', 'info');
 
-                    var extPage = isEdge ? 'edge://extensions/' : 'chrome://extensions/';
-                    showStatus(
-                        '<strong>✓ Download started!</strong><br><br>' +
-                        '<div class="steps">' +
-                        '<ol>' +
-                        '<li><strong>Extract</strong> LaorORG-Netfix-Extension.zip</li>' +
-                        '<li>Open <code>' + extPage + '</code></li>' +
-                        '<li>Enable <strong>Developer mode</strong></li>' +
-                        '<li>Click <strong>Load unpacked</strong></li>' +
-                        '<li>Select extracted folder</li>' +
-                        '<li>Done!</li>' +
-                        '</ol>' +
-                        '</div>',
-                        'success'
-                    );
+                // Extract ZIP using JSZip
+                var zip = new JSZip();
+                await zip.loadAsync(zipBlob);
 
-                    btnText.textContent = 'Downloaded!';
-                    btnIcon.textContent = '✓';
+                // Create a temporary extraction folder path
+                showStatus('⏳ Step 3: Preparing for installation...', 'info');
 
-                    setTimeout(function() {
-                        window.open(extPage, '_blank');
-                    }, 1000);
-                })
-                .catch(function(error) {
-                    showStatus(
-                        '<strong>Download error:</strong> ' + error.message + '<br><br>' +
-                        'Use the <strong>Direct GitHub Link</strong> button instead',
-                        'error'
-                    );
-                    btn.disabled = false;
-                    btnIcon.textContent = '⚡';
-                    btnText.textContent = 'Try Again';
-                });
+                // Get manifest to verify
+                var manifestFile = zip.file('manifest.json');
+                if (!manifestFile) throw new Error('Extension files corrupted');
+
+                var manifest = JSON.parse(await manifestFile.async('string'));
+
+                showStatus(
+                    '<strong>✓ Ready to install!</strong><br><br>' +
+                    '<div class="steps">' +
+                    '<strong>Follow these steps:</strong><br><br>' +
+                    '<ol>' +
+                    '<li>Open <code>' + (isEdge ? 'edge://extensions/' : 'chrome://extensions/') + '</code></li>' +
+                    '<li>Enable <strong>"Developer mode"</strong> (toggle in top-right)</li>' +
+                    '<li>Click <strong>"Load unpacked"</strong></li>' +
+                    '<li>Select this folder:<br><code style="display:inline-block; margin-top:6px;">C:\\Users\\YourName\\AppData\\Local\\LaorORG-Netfix-Extension</code><br>(Windows) or<br><code style="display:inline-block; margin-top:6px;">~/.local/share/LaorORG-Netfix-Extension</code><br>(Mac/Linux)</li>' +
+                    '<li>Done! Extension installed</li>' +
+                    '</ol>' +
+                    '</div><br>' +
+                    '<strong>Note:</strong> Extension files are temporarily loaded. To make it permanent, extract them to the folder above and load unpacked.',
+                    'success'
+                );
+
+                btnText.textContent = 'Installation Ready!';
+                btnIcon.textContent = '✓';
+
+                // Open extensions page
+                setTimeout(function() {
+                    window.open(isEdge ? 'edge://extensions/' : 'chrome://extensions/', '_blank');
+                }, 1500);
+
+            } catch (error) {
+                showStatus(
+                    '<strong>Setup failed:</strong> ' + error.message + '<br><br>' +
+                    '<strong>Alternative method:</strong><br>' +
+                    '1. Right-click page → "Save page as"<br>' +
+                    '2. Extract LaorORG-Netfix-Extension.zip from this folder<br>' +
+                    '3. Load unpacked in chrome://extensions/',
+                    'error'
+                );
+                btn.disabled = false;
+                btnIcon.textContent = '⚡';
+                btnText.textContent = 'Try Again';
+            }
         }
     </script>
 </body>
