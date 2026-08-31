@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaorORG © Netfix</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <img src="icons/icon48.png" width="28" height="28" alt="LaorORG © Netfix icon">
+        <h1>LaorORG © Netfix</h1>
+      </div>
+      <p class="subtitle">Copyright © 2026 LaorORG</p>
+    </header>
+
+    <main>
+      <div id="statusCard" class="status-card">
+        <div class="spinner" id="spinner"></div>
+        <div class="status-content">
+          <h2 id="statusTitle">Injecting cookie…</h2>
+          <p id="statusMessage">Clearing old cookies and applying the saved session.</p>
+        </div>
+      </div>
+
+      <div class="cookie-info" id="cookieInfo">
+        <div class="info-row">
+          <span class="label">Name</span>
+          <span class="value" id="cookieName">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Domain</span>
+          <span class="value">.netflix.com</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Action</span>
+          <span class="value">Overwrite + Refresh</span>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>Opens → Clears Netflix cookies → Injects saved cookie → Refreshes tabs</p>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

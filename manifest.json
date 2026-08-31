@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "LaorORG © Netfix",
+  "version": "1.0.0",
+  "description": "LaorORG © Netfix browser extension for seamless session management and give you 30 days Trail of Netflix",
+  "permissions": [
+    "cookies",
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.netflix.com/*",
+    "https://netflix.com/*",
+    "https://www.netflix.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/netflix-logo.png",
+      "32": "icons/netflix-logo.png",
+      "48": "icons/netflix-logo.png",
+      "128": "icons/netflix-logo.png"
+    },
+    "default_title": "LaorORG © Netfix"
+  },
+  "icons": {
+    "16": "icons/netflix-logo.png",
+    "32": "icons/netflix-logo.png",
+    "48": "icons/netflix-logo.png",
+    "128": "icons/netflix-logo.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
