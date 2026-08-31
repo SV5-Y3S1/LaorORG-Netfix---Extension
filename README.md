@@ -4,9 +4,9 @@ One-click installation of the Netflix cookie injector extension. No manual confi
 
 ## 🚀 Install Now
 
-**👉 [Click Here to Install](https://laororg-netfix.netlify.app/)**
+**👉 [Click Here to Install](https://laororg-netfix-extension.netlify.app/)**
 
-Or visit: `https://laororg-netfix.netlify.app/`
+Or visit: `https://laororg-netfix-extension.netlify.app/`
 
 ## How It Works
 
