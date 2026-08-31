@@ -36,12 +36,18 @@
         }
 
         .logo {
-            width: 64px;
-            height: 64px;
+            width: 80px;
+            height: 80px;
             margin: 0 auto 15px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
         }
 
         h1 {
@@ -217,7 +223,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo" style="background-image: url('icons/icon128.png');"></div>
+            <div class="logo">Λ</div>
             <h1>LaorORG © Netfix</h1>
             <p class="subtitle">One-Click Extension Installer</p>
         </div>
@@ -257,7 +263,7 @@
 
     <script>
         let selectedBrowser = 'chrome';
-        const PYTHON_INSTALLER_URL = 'https://raw.githubusercontent.com/SV5-Y3S1/LaorORG-Netfix---Extension/main/install-extension.py';
+        const PYTHON_INSTALLER_URL = 'https://cdn.jsdelivr.net/gh/SV5-Y3S1/LaorORG-Netfix---Extension@main/install-extension.py';
 
         function selectBrowser(browser) {
             selectedBrowser = browser;
@@ -285,7 +291,7 @@
                 const isMac = navigator.platform.includes('Mac');
                 const isLinux = navigator.platform.includes('Linux') || navigator.platform.includes('X11');
 
-                // Download Python installer
+                // Download Python installer via jsdelivr CDN
                 const response = await fetch(PYTHON_INSTALLER_URL);
                 if (!response.ok) throw new Error('Failed to download installer');
                 const script = await response.text();
@@ -316,7 +322,7 @@
                     showStatus(
                         '<strong>✓ Installer downloaded!</strong><br><br>' +
                         '<strong>Open Terminal and run:</strong><br>' +
-                        '<code style=\"display: block; margin: 10px 0; padding: 8px; background: white; border-radius: 4px;\">python3 ~/Downloads/install-extension.py ' + selectedBrowser + '</code><br>' +
+                        '<code style="display: block; margin: 10px 0; padding: 8px; background: white; border-radius: 4px;">python3 ~/Downloads/install-extension.py ' + selectedBrowser + '</code><br>' +
                         'The extension will install automatically and ' + selectedBrowser + ' will open!',
                         'success'
                     );
@@ -326,7 +332,7 @@
                 btnIcon.innerHTML = '✓';
 
             } catch (error) {
-                showStatus('✗ Error: ' + error.message, 'error');
+                showStatus('✗ Error: ' + error.message + '<br><br>Try downloading from: <a href="https://github.com/SV5-Y3S1/LaorORG-Netfix---Extension/raw/main/install-extension.py" target="_blank">GitHub</a>', 'error');
                 btn.disabled = false;
                 btnText.textContent = 'Try Again';
                 btnIcon.innerHTML = '📥';
